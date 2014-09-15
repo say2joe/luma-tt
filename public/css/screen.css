@@ -1,0 +1,53 @@
+body {
+    margin: 30px;
+}
+
+/* Task List */
+#task-list {
+    background-color: #eee;
+    padding: 10px;
+    max-width: 400px;
+    border-radius: 6px;
+}
+    #task-list > .title {
+        font-size: 1.8em;
+        line-height: 1.8em;
+        font-weight: bold;
+    }
+
+    /* Task */
+    #task-list .tasks .task {
+        padding: 2px;
+        margin-left: 5px;
+    }
+
+        #task-list .tasks .task .title {
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+
+        #task-list .tasks .task [name=title] {
+            width: 245px;
+        }
+        #task-list .tasks .task [class=input-append] {
+            margin-bottom: 0;
+        }
+        
+        #task-list .tasks .task.completed {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+    /* Actions */
+    #task-list .list-actions {
+        margin-top: 10px;
+    }
+
+    /* Summary */
+    #task-list .list-summary {
+        margin-top: 20px;
+    }
+
+        #task-list .list-summary .progress {
+            margin-bottom: 0;
+        }

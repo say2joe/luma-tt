@@ -1,0 +1,7 @@
+<!-- View task -->
+
+<!-- Completed -->
+<input type="checkbox" name="completed"<% if (completed) { %> checked="checked"<% } %> value="1"/>
+
+<!-- Title -->
+<span class="title" title="Double-click to edit this task"><%= title || '<em>untitled</em>' %></span>
