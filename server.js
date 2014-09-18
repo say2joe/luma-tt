@@ -25,8 +25,7 @@ http.createServer(function(req, res) {
             if (err) {
                 res.writeHead(404);
                 res.end(JSON.stringify(err));
-            }
-            else {
+            } else {
                 res.writeHead(200);
                 res.end(data);
             }

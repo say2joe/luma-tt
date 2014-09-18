@@ -48,6 +48,13 @@ define(['exports', 'core'], function(tasks, core) {
 	 */
 	tasks.views.TaskView = core.views.View.extend({
 
+                DOM: function() {
+                        this.DOM = {
+                                $remaining: $('.task-count-remaining'),
+                                $completed: $('.task-count-complete')
+                        };
+                },
+
 		attributes: {
 			'class': 'task'
 		},
@@ -60,20 +67,26 @@ define(['exports', 'core'], function(tasks, core) {
 		},
 
 		initialize: function() {
+                        this.DOM();
 			this.model
 				.on('destroy', this.onTaskDestroyed, this)
 				.on('change', this.onTaskChanged, this);
 			this.render();
 		},
+
 		render: function() {
-			var self = this;
+                        var self = this,
+                                $remaining = this.DOM.$remaining,
+                                $completed = this.DOM.$completed,
+                                isCompleted = this.model.get('completed');
 
 			// Mark as completed
-			if (this.model.get('completed'))
-				this.$el.addClass('completed')
-			else
-				this.$el.removeClass('completed');
-			
+                        this.$el.toggleClass('completed', isCompleted);
+                        if (isCompleted) {
+                                $completed.text(parseInt($completed.text(), 10) + (isCompleted * 1) + 1);
+                                $remaining.text(parseInt($remaining.text(), 10) - (isCompleted * 1) - 1);
+                        }
+
 			// Render template
 			this.loadTemplate(
 				this.model.get('_editing') ? 'task_edit.html' : 'task_view.html',
@@ -123,6 +136,7 @@ define(['exports', 'core'], function(tasks, core) {
 		},
 
 		events: {
+                        'click .show-intro': 'reset', // Reset tasks to show intro modal
 			'click .add-task-action': 'onAddClicked' // Add Task button clicked
 		},
 
@@ -130,21 +144,21 @@ define(['exports', 'core'], function(tasks, core) {
 			this.collection
 				.on('add', this.onTaskAdded, this)
 				.on('reset', function() { this.render() }, this);
-
 			this.render();
 		},
 
 		render: function() {
 			var self = this;
+                        $('.task-count-remaining').text(this.collection.length);
 			this.collection.each(function(task) {
 				self.renderTask(task);
 			});
 		},
+
 		renderTask: function(task) {
 			var taskView = new tasks.views.TaskView({ model: task });
 			$('.tasks', this.el).append(taskView.el);
 		},
-
 
 		// UI events
 		onAddClicked: function(e) {
@@ -155,7 +169,15 @@ define(['exports', 'core'], function(tasks, core) {
 		// Task events
 		onTaskAdded: function(task, taskList, options) {
 			this.renderTask(task);
+                },
+
+                reset: function(event) {
+                        this.collection.each(function(model) {
+              model.destroy();
+            });
+                        window.location.reload();
 		}
+
 	});
 
 });

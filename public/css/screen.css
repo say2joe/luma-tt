@@ -8,6 +8,7 @@ body {
     padding: 10px;
     max-width: 400px;
     border-radius: 6px;
+    margin: 0 auto;
 }
     #task-list > .title {
         font-size: 1.8em;
@@ -17,13 +18,23 @@ body {
 
     /* Task */
     #task-list .tasks .task {
+        clear: both;
         padding: 2px;
         margin-left: 5px;
     }
 
+        #task-list .tasks .task [type=checkbox] {
+            padding-right: 3px;
+            margin-top: 2px;
+            font-size: 20px;
+            float: left;
+        }
+
         #task-list .tasks .task .title {
             font-size: 1.1em;
             cursor: pointer;
+            float: right;
+            width: 94%;
         }
 
         #task-list .tasks .task [name=title] {
@@ -32,7 +43,7 @@ body {
         #task-list .tasks .task [class=input-append] {
             margin-bottom: 0;
         }
-        
+
         #task-list .tasks .task.completed {
             text-decoration: line-through;
             color: #666;
@@ -51,3 +62,11 @@ body {
         #task-list .list-summary .progress {
             margin-bottom: 0;
         }
+
+
+@media (max-width: 320px) {
+  body {
+    padding: 3px;
+    margin: 5px;
+  }
+}
