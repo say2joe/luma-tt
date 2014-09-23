@@ -14,7 +14,7 @@
 { "title": "Display an error when the user tries to save a task with a blank title" },
 { "title": "Implement the delete button" },
 { "title": "How could hotkeys be implemented to make things easier?" },
-{ "title": "Are there any bugs or memory leaks? If so, try to fix them." },
+{ "title": "Are there any bugs or memory leaks? If so, try to fix them. (YES, but need to fix for collection)" },
 { "title": "Sync tasks with the server instead of localStorage" },
 { "title": "Add an \"updated_at\" field that stores the date/time the task was saved" },
 { "title": "Refactor code to allow for creation of multiple task lists" },

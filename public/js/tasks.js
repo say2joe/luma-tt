@@ -4,14 +4,15 @@ define(['exports', 'core'], function(tasks, core) {
 	tasks.views = {};
 
 	/**
-	 * Single task
-	 */
+	* Single task
+	*/
 	tasks.models.Task = core.models.Model.extend({
 
 		defaults: {
 			title: null,
 			completed: false, // Task completed?
-			_editing: false // Task in edit mode?
+			_editing: false, // Task in edit mode?
+			datetime: Date.now()
 		},
 
 		isVisible: function() {
@@ -21,39 +22,40 @@ define(['exports', 'core'], function(tasks, core) {
 	});
 
 	/**
-	 * List of tasks
-	 */
+	* List of tasks
+	*/
 	tasks.models.TaskList = core.models.List.extend({
 		model: tasks.models.Task,
 		localStorage: new Backbone.LocalStorage('myTasks'),
 
 		/**
-		 * @returns all tasks that have been completed
-		 */
+		* @returns all tasks that have been completed
+		*/
 		completed: function() {
 			return this.where({ completed: true });
 		},
 
 		// returns a list of all tasks that haven't been completed yet
 		/**
-		 * @returns all tasks that haven't been completed yet
-		 */
+		* @returns all tasks that haven't been completed yet
+		*/
 		active: function() {
 			return this.without.apply(this, this.completed());
 		}
 	});
 
 	/**
-	 * View for a single task
-	 */
+	* View for a single task
+	*/
 	tasks.views.TaskView = core.views.View.extend({
 
-                DOM: function() {
-                        this.DOM = {
-                                $remaining: $('.task-count-remaining'),
-                                $completed: $('.task-count-complete')
-                        };
-                },
+		DOM: function() {
+			this.DOM = {
+				$progress: $(".progress-warning .bar"),
+				$remaining: $('.task-count-remaining'),
+				$completed: $('.task-count-complete')
+			};
+		},
 
 		attributes: {
 			'class': 'task'
@@ -63,11 +65,12 @@ define(['exports', 'core'], function(tasks, core) {
 			'dblclick .title': 'onTaskDblClicked', // Task double-clicked
 			'click .save-task-action': 'onSaveClicked', // Save button clicked
 			'click .cancel-task-action': 'onCancelClicked', // Cancel button clicked
+			'click .delete-task-action': 'deleteTask', // Trashcan / Delete clicked
 			'change [name=completed]': 'onCompleteChanged' // "Completed" checkbox changed
 		},
 
 		initialize: function() {
-                        this.DOM();
+			this.DOM();
 			this.model
 				.on('destroy', this.onTaskDestroyed, this)
 				.on('change', this.onTaskChanged, this);
@@ -75,23 +78,40 @@ define(['exports', 'core'], function(tasks, core) {
 		},
 
 		render: function() {
-                        var self = this,
-                                $remaining = this.DOM.$remaining,
-                                $completed = this.DOM.$completed,
-                                isCompleted = this.model.get('completed');
+			var self = this,
+					tasks = self.model.collection,
+					$remaining = self.DOM.$remaining,
+					$completed = self.DOM.$completed,
+					inEditMode = this.model.get('_editing'),
+					completedTasks = tasks.completed().length,
+					isCompleted = self.model.get('completed');
 
-			// Mark as completed
-                        this.$el.toggleClass('completed', isCompleted);
-                        if (isCompleted) {
-                                $completed.text(parseInt($completed.text(), 10) + (isCompleted * 1) + 1);
-                                $remaining.text(parseInt($remaining.text(), 10) - (isCompleted * 1) - 1);
-                        }
+
+			$completed.text(completedTasks);
+			$remaining.text(tasks.length - completedTasks);
+			self.DOM.$progress.css("width", function() {
+				return (completedTasks / tasks.length * 100) + "%";
+			});
+
+			// Set CSS styling for completed task
+			this.$el.toggleClass('completed', isCompleted);
+
 
 			// Render template
 			this.loadTemplate(
-				this.model.get('_editing') ? 'task_edit.html' : 'task_view.html',
+				inEditMode ? 'task_edit.html' : 'task_view.html',
 				function(template) {
+					self.$el.attr("title", function(){
+						var dt = (new Date(self.model.get('datetime'))).toLocaleString();
+						return this.title = "Last saved: "+ dt;
+					});
 					self.$el.html( _.template(template, self.model.attributes) );
+					self.$el.attr('accesskey', String.fromCharCode(
+						self.model.collection.indexOf(self.model) + 65
+					));
+					if (inEditMode) {
+						self.$el.find("input[type=text]").focus()
+					}
 				}
 			);
 		},
@@ -103,21 +123,34 @@ define(['exports', 'core'], function(tasks, core) {
 			this.render();
 		},
 		onSaveClicked: function(e) {
+			var title = $('[name=title]', this.$el).val();
 			e.preventDefault();
-			this.model.save({
-				title: $('[name=title]', this.$el).val(),
-				_editing: false
-			});
-			this.render();
+			if (title) {
+				this.model.save({
+					datetime: Date.now(),
+					_editing: false,
+					title: title
+				});
+				this.render();
+			} else {
+				$('#title-warning').modal();
+			}
 		},
 		onCancelClicked: function(e) {
 			e.preventDefault();
 			this.model.set({ _editing: false });
+			this.$el.hide();
 			this.render();
 		},
 		onCompleteChanged: function(e) {
 			var isChecked = $(e.target).is(':checked');
 			this.model.save({ completed: isChecked });
+		},
+
+		// ON is antiquaited, but still apropos for the DOM
+		deleteTask: function(event) {
+			this.model.destroy();
+			this.$el.remove();
 		},
 
 		// Task events
@@ -127,8 +160,8 @@ define(['exports', 'core'], function(tasks, core) {
 	});
 
 	/**
-	 * View for a list of tasks
-	 */
+	* View for a list of tasks
+	*/
 	tasks.views.TaskListView = core.views.View.extend({
 
 		attributes: {
@@ -136,7 +169,8 @@ define(['exports', 'core'], function(tasks, core) {
 		},
 
 		events: {
-                        'click .show-intro': 'reset', // Reset tasks to show intro modal
+			'keypress .tasks': 'editTask', // Add accessbility via accesskeys
+			'click .show-intro': 'resetTaskList', // Reset tasks to show intro modal
 			'click .add-task-action': 'onAddClicked' // Add Task button clicked
 		},
 
@@ -149,7 +183,6 @@ define(['exports', 'core'], function(tasks, core) {
 
 		render: function() {
 			var self = this;
-                        $('.task-count-remaining').text(this.collection.length);
 			this.collection.each(function(task) {
 				self.renderTask(task);
 			});
@@ -166,16 +199,20 @@ define(['exports', 'core'], function(tasks, core) {
 			this.collection.add({ _editing: true });
 		},
 
+		// Keyboard events
+		editTask: function(event) {
+			var target = $(event.target);
+			return target;
+		},
+
 		// Task events
 		onTaskAdded: function(task, taskList, options) {
 			this.renderTask(task);
-                },
+		},
 
-                reset: function(event) {
-                        this.collection.each(function(model) {
-              model.destroy();
-            });
-                        window.location.reload();
+		// Reset to begging
+		resetTaskList: function(event) {
+			this.collection.reset();
 		}
 
 	});

@@ -35,6 +35,16 @@ define(['exports'], function(core) {
 				//if (model.hasChanged())
 				model.save();
 			});
+		},
+
+		/**
+		 * Reload with no saved collection
+		 */
+		reset: function() {
+			_.each(this.models, function(model) {
+				model.destroy();
+			});
+			window.location.reload();
 		}
 
 	});
