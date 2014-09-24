@@ -3,6 +3,20 @@ define(['exports', 'core'], function(tasks, core) {
 	tasks.models = {};
 	tasks.views = {};
 
+	$(function(){
+		$('body').on('keypress', function(event) {
+			var $task,
+					$target = $(event.target);
+
+			if ($target.is(':input')) return;
+
+			$task = $('.task').filter(function() {
+				var key = String.fromCharCode(event.which);
+				return (this.accessKey === key.toUpperCase());
+			}).find('.title').dblclick();
+		});
+	});
+
 	/**
 	* Single task
 	*/
@@ -80,22 +94,16 @@ define(['exports', 'core'], function(tasks, core) {
 		render: function() {
 			var self = this,
 					tasks = self.model.collection,
-					$remaining = self.DOM.$remaining,
-					$completed = self.DOM.$completed,
-					inEditMode = this.model.get('_editing'),
-					completedTasks = tasks.completed().length,
+					inEditMode = self.model.get('_editing'),
 					isCompleted = self.model.get('completed');
 
-
-			$completed.text(completedTasks);
-			$remaining.text(tasks.length - completedTasks);
+			// Update progress bar based on completed tasks.
 			self.DOM.$progress.css("width", function() {
-				return (completedTasks / tasks.length * 100) + "%";
+				return (tasks.completed().length / tasks.length * 100) + "%";
 			});
 
 			// Set CSS styling for completed task
 			this.$el.toggleClass('completed', isCompleted);
-
 
 			// Render template
 			this.loadTemplate(
@@ -114,6 +122,15 @@ define(['exports', 'core'], function(tasks, core) {
 					}
 				}
 			);
+
+			// Update task counts
+			this.updateTaskCount();
+		},
+
+		updateTaskCount: function(collection) {
+			var DOM = this.DOM, tasks = collection || this.model.collection;
+			DOM.$completed.text(tasks.completed().length);
+			DOM.$remaining.text(tasks.active().length);
 		},
 
 		// UI events
@@ -149,8 +166,10 @@ define(['exports', 'core'], function(tasks, core) {
 
 		// ON is antiquaited, but still apropos for the DOM
 		deleteTask: function(event) {
-			this.model.destroy();
+			var collection = this.model.collection;
 			this.$el.remove();
+			this.model.destroy();
+			this.updateTaskCount(collection);
 		},
 
 		// Task events
@@ -169,7 +188,6 @@ define(['exports', 'core'], function(tasks, core) {
 		},
 
 		events: {
-			'keypress .tasks': 'editTask', // Add accessbility via accesskeys
 			'click .show-intro': 'resetTaskList', // Reset tasks to show intro modal
 			'click .add-task-action': 'onAddClicked' // Add Task button clicked
 		},
@@ -197,12 +215,6 @@ define(['exports', 'core'], function(tasks, core) {
 		onAddClicked: function(e) {
 			e.preventDefault();
 			this.collection.add({ _editing: true });
-		},
-
-		// Keyboard events
-		editTask: function(event) {
-			var target = $(event.target);
-			return target;
 		},
 
 		// Task events

@@ -1,5 +1,18 @@
+html, body {
+  min-height: 100%;
+  min-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
 body {
-    margin: 30px;
+  position: absolute;
+  display: table;
+}
+
+.container {
+  vertical-align: middle;
+  display: table-cell;
 }
 
 /* Task List */
@@ -7,9 +20,10 @@ body {
     background-color: #eee;
     padding: 10px;
     max-width: 400px;
-    border-radius: 6px;
+    border-radius: 9px;
     margin: 0 auto;
 }
+
     #task-list > .title {
         font-size: 1.8em;
         line-height: 1.8em;
@@ -55,9 +69,13 @@ body {
 
     /* Actions */
     #task-list .list-actions {
-        margin-top: 10px;
-        clear: both;
+        position: relative;
+        top: 10px;
     }
+
+        #task-list .list-actions .show-intro {
+            float: right;
+        }
 
     /* Summary */
     #task-list .list-summary {
@@ -79,7 +97,7 @@ body {
 }
 
 @media (max-width: 320px) {
-  body {
+  .container {
     padding: 3px;
     margin: 5px;
   }

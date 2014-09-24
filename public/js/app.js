@@ -27,7 +27,7 @@ requirejs.config({
 			exports: '_'
 		},
 		'bootstrap': [
-			'lib/bootstrap/bootstrap-datepicker', 
+			'lib/bootstrap/bootstrap-datepicker',
 			'lib/bootstrap/bootstrap-timepicker'
 		],
 		'jasmine-html': {
@@ -44,7 +44,7 @@ require(['domReady', 'tasks', 'text!initial_tasks.json'], function(domReady, tas
 	// Task list
 	var taskList = new tasks.models.TaskList()
 	taskList.load(); // Load from localStorage
-	var isNewCandidate = ( taskList.length == 0 );
+	var isNewCandidate = !taskList.length;
 
 	if (isNewCandidate) {
 		// Create seed data
