@@ -42,6 +42,7 @@ body {
     }
 
         #task-list .tasks .task [type=checkbox] {
+            box-shadow: 1px 3px 7px #09f;
             padding-right: 3px;
             margin-top: 2px;
             font-size: 20px;

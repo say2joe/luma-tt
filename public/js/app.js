@@ -39,10 +39,11 @@ requirejs.config({
 });
 
 // Main
-require(['domReady', 'tasks', 'text!initial_tasks.json'], function(domReady, tasks) {
+require(['mongojs', 'domReady', 'tasks', 'text!initial_tasks.json'], function(mongojs, domReady, tasks) {
 
 	// Task list
-	var taskList = new tasks.models.TaskList()
+	var database = mongojs.connect("luma-tt", ["tasks"]);
+	var taskList = new tasks.models.TaskList();
 	taskList.load(); // Load from localStorage
 	var isNewCandidate = !taskList.length;
 
@@ -61,6 +62,7 @@ require(['domReady', 'tasks', 'text!initial_tasks.json'], function(domReady, tas
 
 	// Task list view
 	var taskListView = new tasks.views.TaskListView({
+		db: database,
 		el: $('#task-list'),
 		collection: taskList
 	});

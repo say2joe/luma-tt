@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var fs = require('fs'),
-    http = require('http');
+    http = require('http'),
+    mongojs = require('mongojs');
 
 var port = 8888,
     webroot = 'public',
@@ -32,5 +33,7 @@ http.createServer(function(req, res) {
         });
     }
 }).listen(port);
+
+
 
 console.log('Server is running at http://127.0.0.1:%d', port);
